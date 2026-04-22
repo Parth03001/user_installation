@@ -207,7 +207,7 @@ Write-Host "  Start-All          /  Stop-All" -ForegroundColor Yellow
 Write-Host "  psql -U postgres" -ForegroundColor Yellow
 Write-Host ""
 
-# Quick status check
-java -version 2>&1 | Select-Object -First 1
-pg_isready -h localhost -p 5432 2>$null
-node --version
+# Quick status check (java -version writes to stderr, convert to string first)
+try { java -version 2>&1 | ForEach-Object { $_.ToString() } | Select-Object -First 1 } catch {}
+try { pg_isready -h localhost -p 5432 2>&1 | ForEach-Object { $_.ToString() } | Select-Object -First 1 } catch {}
+try { node --version } catch {}
