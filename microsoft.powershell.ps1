@@ -10,7 +10,7 @@ if ((Get-ExecutionPolicy -Scope CurrentUser) -eq "Restricted") {
 
 Write-Host "AI/ML Environment loading..." -ForegroundColor Green
 
-$neo4jVersion = "2025.11.0"
+$neo4jVersion = "2026.03.1"
 $nodeVersion  = "24.13.0"
 $osVersion    = "3.6.0"
 $nginxVersion = "1.30.0"

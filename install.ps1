@@ -1,7 +1,7 @@
 # =============================================================
 # USER INSTALLATION SCRIPT  (No Admin Required)
 # User : 50017162
-# Tools: PostgreSQL 18.3 | Neo4j 2025.11.0 | Node.js 24.13.0
+# Tools: PostgreSQL 18.3 | Neo4j 2026.03.1 | Node.js 24.13.0
 #        OpenSearch 3.6.0 | nginx 1.30.0
 #
 # =============================================================
@@ -12,9 +12,9 @@
 #     https://nodejs.org/dist/v24.13.0/node-v24.13.0-win-x64.zip
 #     Save as: node-v24.13.0-win-x64.zip
 #
-#  2. Neo4j Community 2025.11.0 (direct zip):
-#     https://dist.neo4j.org/neo4j-community-2025.11.0-windows.zip
-#     Save as: neo4j-community-2025.11.0-windows.zip
+#  2. Neo4j Community 2026.03.1 (direct zip):
+#     https://dist.neo4j.org/neo4j-community-2026.03.1-windows.zip
+#     Save as: neo4j-community-2026.03.1-windows.zip
 #
 #  3. PostgreSQL 18 binaries zip (~330 MB):
 #     Visit: https://www.enterprisedb.com/download-postgresql-binaries
@@ -41,7 +41,7 @@ if ((Get-ExecutionPolicy -Scope CurrentUser) -eq "Restricted") {
 
 Write-Host ""
 Write-Host " AI/ML Stack Installer - user 50017162 (no admin)" -ForegroundColor Green
-Write-Host " PostgreSQL 18.3 | Neo4j 2025.11.0 | Node.js v24.13.0" -ForegroundColor Cyan
+Write-Host " PostgreSQL 18.3 | Neo4j 2026.03.1 | Node.js v24.13.0" -ForegroundColor Cyan
 Write-Host " OpenSearch 3.6.0 | nginx 1.30.0" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor DarkGray
 Write-Host ""
@@ -50,7 +50,7 @@ Write-Host ""
 # VERSION CONFIG
 # -------------------------------------------------------------
 $pgBuild        = "18.3-3"
-$neo4jVersion   = "2025.11.0"
+$neo4jVersion   = "2026.03.1"
 $nodeVersion    = "24.13.0"
 $osVersion      = "3.6.0"
 $nginxVersion   = "1.30.0"
