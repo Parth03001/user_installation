@@ -280,10 +280,36 @@ if (Test-Path $osHome) {
     New-Item $osLogsDir -ItemType Directory -Force | Out-Null
     $osDataYml = $osDataDir.Replace("\", "/")
     $osLogsYml = $osLogsDir.Replace("\", "/")
-    $javaHomeYml = $javaHome.Replace("\", "/")
 
+    # STEP 5a: Run OpenSearch demo install script to generate TLS cert files
+    # (root-ca.pem, esnode.pem, esnode-key.pem, kirk.pem, kirk-key.pem)
+    $demoScript = "$osHome\plugins\opensearch-security\tools\install_demo_configuration.bat"
+    $rootCaPem  = "$osHome\config\root-ca.pem"
+    if (-not (Test-Path $rootCaPem)) {
+        if (Test-Path $demoScript) {
+            Write-Host "  Generating demo TLS certificates via install_demo_configuration.bat ..." -ForegroundColor Yellow
+            Push-Location $osHome
+            & cmd.exe /c "`"$demoScript`" -y" 2>&1 | Out-Null
+            Pop-Location
+            if (Test-Path $rootCaPem) {
+                Write-Host "  TLS certificates generated." -ForegroundColor Green
+            }
+            else {
+                Write-Host "  WARNING: cert generation may have failed. Check $osHome\config\" -ForegroundColor Red
+            }
+        }
+        else {
+            Write-Host "  WARNING: install_demo_configuration.bat not found at:" -ForegroundColor Red
+            Write-Host "    $demoScript" -ForegroundColor Yellow
+        }
+    }
+    else {
+        Write-Host "  [skip] TLS certificates already exist." -ForegroundColor DarkGray
+    }
+
+    # STEP 5b: Write our opensearch.yml (overrides whatever the demo script wrote)
     $osConfig = @"
-# OpenSearch 3.6.0 - single-node with password (admin / Dataeaze@12345)
+# OpenSearch 3.6.0 - single-node  admin / Dataeaze@12345
 cluster.name: local-cluster
 node.name: local-node
 
@@ -293,12 +319,10 @@ path.logs: $osLogsYml
 network.host: 127.0.0.1
 http.port: 9200
 
-# Single-node cluster
 cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
-# Security: enabled with demo certs, HTTP without SSL
-# Connect with: http://localhost:9200  user=admin  pass=Dataeaze@12345
+# Security: transport uses demo certs, HTTP on plain port 9200 (no SSL)
 plugins.security.ssl.http.enabled: false
 plugins.security.ssl.transport.pemcert_filepath: esnode.pem
 plugins.security.ssl.transport.pemkey_filepath: esnode-key.pem
@@ -316,9 +340,8 @@ plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 "@
     Write-ConfigFile -Path "$osHome\config\opensearch.yml" -Content $osConfig -Label "opensearch.yml"
-    Write-Host "  OpenSearch port : 9200  user=admin  pass=Dataeaze@12345" -ForegroundColor DarkGray
-    Write-Host "  NOTE: Delete data dir if restarting after security change:" -ForegroundColor Yellow
-    Write-Host "    Remove-Item -Recurse -Force $osDataDir" -ForegroundColor Yellow
+    Write-Host "  OpenSearch port : 9200  user=admin  pass=Dataeaze@12345" -ForegroundColor Cyan
+    Write-Host "  NOTE: Run Reset-OpenSearchData before first start with security." -ForegroundColor Yellow
 }
 else {
     Write-Host "  [skip] OpenSearch folder not found yet." -ForegroundColor Yellow
