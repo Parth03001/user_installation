@@ -335,16 +335,16 @@ http {
         # OpenSearch REST API
         location /opensearch/ {
             proxy_pass         http://127.0.0.1:9200/;
-            proxy_set_header   Host \$host;
-            proxy_set_header   X-Real-IP \$remote_addr;
+            proxy_set_header   Host `$host;
+            proxy_set_header   X-Real-IP `$remote_addr;
         }
 
         # Neo4j Browser UI
         location /neo4j/ {
             proxy_pass         http://127.0.0.1:7474/;
-            proxy_set_header   Host \$host;
+            proxy_set_header   Host `$host;
             proxy_http_version 1.1;
-            proxy_set_header   Upgrade \$http_upgrade;
+            proxy_set_header   Upgrade `$http_upgrade;
             proxy_set_header   Connection "upgrade";
         }
 
