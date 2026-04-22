@@ -172,7 +172,9 @@ function Add-ToUserPath {
 function Write-ConfigFile {
     param([string]$Path, [string]$Content, [string]$Label)
     New-Item (Split-Path $Path) -ItemType Directory -Force | Out-Null
-    Set-Content -Path $Path -Value $Content -Encoding UTF8
+    # Use UTF-8 WITHOUT BOM - nginx and OpenSearch reject files with BOM
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
     Write-Host "  Config written: $Label" -ForegroundColor Green
 }
 
@@ -291,7 +293,9 @@ path.logs: $osLogsYml
 network.host: 127.0.0.1
 http.port: 9200
 
-discovery.type: single_node
+# Single-node cluster (OpenSearch uses this, NOT discovery.type: single_node)
+cluster.initial_cluster_manager_nodes: local-node
+discovery.seed_hosts: []
 
 # Disable security plugin for local development
 plugins.security.disabled: true
