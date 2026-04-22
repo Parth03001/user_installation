@@ -1,0 +1,177 @@
+[2026-04-22T17:00:56,288][WARN ][stderr                   ] [local-node] Apr 22, 2026 5:00:56 PM org.apache.lucene.internal.vectorization.PanamaVectorizationProvider <init>
+[2026-04-22T17:00:56,288][WARN ][stderr                   ] [local-node] INFO: Java vector incubator API enabled; uses preferredBitSize=512; FMA enabled
+[2026-04-22T17:00:57,657][INFO ][o.o.c.b.JarHell          ] [local-node] Plugin [opensearch-neural-search] extends multiple plugins/modules that share common dependencies: [file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/protobufs-1.3.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-protobuf-lite-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-util-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-api-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/perfmark-api-0.27.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/failureaccess-1.0.2.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-protobuf-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-stub-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-services-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-netty-shaded-1.75.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/guava-33.2.1-jre.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/transport-grpc-spi-3.6.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/transport-grpc-3.6.0.jar, file:/C:/Users/50017162/opensearch/opensearch-3.6.0/modules/transport-grpc/grpc-core-1.75.0.jar]. This is expected when extended plugins share common ancestors.
+[2026-04-22T17:00:58,115][INFO ][o.o.s.s.t.SSLConfig      ] [local-node] SSL dual mode is disabled
+[2026-04-22T17:00:58,115][WARN ][o.o.s.OpenSearchSecurityPlugin] [local-node] OpenSearch Security plugin installed but disabled. This can expose your configuration (including passwords) to the public.
+[2026-04-22T17:01:00,254][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Loading 2 QueryBuilderProtoConverter extensions from other plugins
+[2026-04-22T17:01:00,256][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Discovered QueryBuilderProtoConverter extension: org.opensearch.knn.grpc.proto.request.search.query.KNNQueryBuilderProtoConverter (handles: KNN)
+[2026-04-22T17:01:00,260][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Discovered QueryBuilderProtoConverter extension: org.opensearch.neuralsearch.grpc.proto.request.search.query.HybridQueryBuilderProtoConverter (handles: HYBRID)
+[2026-04-22T17:01:00,260][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Successfully loaded 2 QueryBuilderProtoConverter extensions
+[2026-04-22T17:01:00,263][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Found 1 gRPC interceptor providers, will initialize during component creation
+[2026-04-22T17:01:00,263][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Successfully loaded 0 GrpcServiceFactory extensions
+[2026-04-22T17:01:00,267][INFO ][o.o.i.r.ReindexModulePlugin] [local-node] ReindexPlugin reloadSPI called
+[2026-04-22T17:01:00,267][INFO ][o.o.i.r.ReindexModulePlugin] [local-node] Unable to find any implementation for RemoteReindexExtension
+[2026-04-22T17:01:00,966][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for ml-model-group
+[2026-04-22T17:01:00,974][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for workflow_state
+[2026-04-22T17:01:00,974][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for workflow
+[2026-04-22T17:01:00,974][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for report-definition
+[2026-04-22T17:01:00,974][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for report-instance
+[2026-04-22T17:01:00,981][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for forecaster
+[2026-04-22T17:01:00,981][INFO ][o.o.s.r.ResourceActionGroupsHelper] [local-node] Registered 3 action-groups for anomaly-detector
+[2026-04-22T17:01:00,981][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: opensearch_time_series_analytics, index: .opendistro-anomaly-detector-jobs
+[2026-04-22T17:01:00,981][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: opendistro-index-management, index: .opendistro-ism-config
+[2026-04-22T17:01:00,981][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: opensearch_sap_job, index: .opensearch-sap--job
+[2026-04-22T17:01:01,065][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: reports-scheduler, index: .opendistro-reports-definitions
+[2026-04-22T17:01:01,065][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: scheduled_experiment_job, index: .search-relevance-scheduled-experiment-jobs
+[2026-04-22T17:01:01,065][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: opensearch_ml_commons_jobs, index: .plugins-ml-jobs
+[2026-04-22T17:01:01,065][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: scheduler_geospatial_ip2geo_datasource, index: .scheduler-geospatial-ip2geo-datasource
+[2026-04-22T17:01:01,065][INFO ][o.o.j.JobSchedulerPlugin ] [local-node] Loaded scheduler extension: async-query-scheduler, index: .async-query-scheduler
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [aggs-matrix-stats]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [analysis-common]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [cache-common]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [geo]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [ingest-common]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [ingest-geoip]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [ingest-user-agent]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [lang-expression]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [lang-mustache]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [lang-painless]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [mapper-extras]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [opensearch-dashboards]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [parent-join]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [percolator]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [rank-eval]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [reindex]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [repository-url]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [rule-framework]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [search-pipeline-common]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [store-subdirectory]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [transport-grpc]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded module [transport-netty4]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-alerting]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-anomaly-detection]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-asynchronous-search]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-cross-cluster-replication]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-custom-codecs]
+[2026-04-22T17:01:01,107][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-flow-framework]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-geospatial]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-index-management]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-job-scheduler]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-knn]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-ltr]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-ml]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-neural-search]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-notifications]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-notifications-core]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-observability]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-reports-scheduler]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-search-relevance]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-security]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-security-analytics]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-skills]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-sql]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-system-templates]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [opensearch-ubi]
+[2026-04-22T17:01:01,117][INFO ][o.o.p.PluginsService     ] [local-node] loaded plugin [query-insights]
+[2026-04-22T17:01:01,170][INFO ][o.o.e.NodeEnvironment    ] [local-node] using [1] data paths, mounts [[(C:)]], net usable_space [107.7gb], net total_space [476gb], types [NTFS]
+[2026-04-22T17:01:01,170][INFO ][o.o.e.NodeEnvironment    ] [local-node] heap size [512mb], compressed ordinary object pointers [true]
+[2026-04-22T17:01:01,218][INFO ][o.o.n.Node               ] [local-node] node name [local-node], node ID [_cjqvsaOQGSFQ_RehG7USg], cluster name [local-cluster], roles [ingest, remote_cluster_client, data, cluster_manager]
+[2026-04-22T17:01:01,329][INFO ][o.o.e.ExtensionsManager  ] [local-node] ExtensionsManager initialized
+[2026-04-22T17:01:03,427][WARN ][stderr                   ] [local-node] SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+[2026-04-22T17:01:03,430][WARN ][stderr                   ] [local-node] SLF4J: Defaulting to no-operation (NOP) logger implementation
+[2026-04-22T17:01:03,430][WARN ][stderr                   ] [local-node] SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+[2026-04-22T17:01:04,096][INFO ][o.o.i.MergeSchedulerConfig] [local-node] Updating autoThrottle for index _na_ from [false] to [true]
+[2026-04-22T17:01:04,096][INFO ][o.o.i.MergeSchedulerConfig] [local-node] Updating maxThreadCount from [0] to [4] and maxMergeCount from [0] to [9] for index _na_.
+[2026-04-22T17:01:04,099][INFO ][o.o.i.MergeSchedulerConfig] [local-node] Initialized index _na_ with maxMergeCount=9, maxThreadCount=4, autoThrottleEnabled=true
+[2026-04-22T17:01:04,425][INFO ][o.o.i.MergeSchedulerConfig] [local-node] Updating autoThrottle for index _na_ from [false] to [true]
+[2026-04-22T17:01:04,425][INFO ][o.o.i.MergeSchedulerConfig] [local-node] Updating maxThreadCount from [0] to [4] and maxMergeCount from [0] to [9] for index _na_.
+[2026-04-22T17:01:04,425][INFO ][o.o.i.MergeSchedulerConfig] [local-node] Initialized index _na_ with maxMergeCount=9, maxThreadCount=4, autoThrottleEnabled=true
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MATCH_ALL: org.opensearch.transport.grpc.proto.request.search.query.MatchAllQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MATCH_NONE: org.opensearch.transport.grpc.proto.request.search.query.MatchNoneQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for TERM: org.opensearch.transport.grpc.proto.request.search.query.TermQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for TERMS: org.opensearch.transport.grpc.proto.request.search.query.TermsQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MATCH_PHRASE: org.opensearch.transport.grpc.proto.request.search.query.MatchPhraseQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MULTI_MATCH: org.opensearch.transport.grpc.proto.request.search.query.MultiMatchQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for BOOL: org.opensearch.transport.grpc.proto.request.search.query.BoolQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for SCRIPT: org.opensearch.transport.grpc.proto.request.search.query.ScriptQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for EXISTS: org.opensearch.transport.grpc.proto.request.search.query.ExistsQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for REGEXP: org.opensearch.transport.grpc.proto.request.search.query.RegexpQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for WILDCARD: org.opensearch.transport.grpc.proto.request.search.query.WildcardQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for GEO_BOUNDING_BOX: org.opensearch.transport.grpc.proto.request.search.query.GeoBoundingBoxQueryBuilderProtoConverter
+[2026-04-22T17:01:07,398][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for GEO_DISTANCE: org.opensearch.transport.grpc.proto.request.search.query.GeoDistanceQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for NESTED: org.opensearch.transport.grpc.proto.request.search.query.NestedQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for IDS: org.opensearch.transport.grpc.proto.request.search.query.IdsQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for RANGE: org.opensearch.transport.grpc.proto.request.search.query.RangeQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for TERMS_SET: org.opensearch.transport.grpc.proto.request.search.query.TermsSetQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for CONSTANT_SCORE: org.opensearch.transport.grpc.proto.request.search.query.ConstantScoreQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for FUZZY: org.opensearch.transport.grpc.proto.request.search.query.FuzzyQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for PREFIX: org.opensearch.transport.grpc.proto.request.search.query.PrefixQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MATCH: org.opensearch.transport.grpc.proto.request.search.query.MatchQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MATCH_BOOL_PREFIX: org.opensearch.transport.grpc.proto.request.search.query.MatchBoolPrefixQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for MATCH_PHRASE_PREFIX: org.opensearch.transport.grpc.proto.request.search.query.MatchPhrasePrefixQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for FUNCTION_SCORE: org.opensearch.transport.grpc.proto.request.search.query.functionscore.FunctionScoreQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Set registry on 24 converters
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterRegistryImpl] [local-node] Registered 24 built-in query converters
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Injecting registry and registering 2 external QueryBuilderProtoConverter(s)
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Processing external converter: org.opensearch.knn.grpc.proto.request.search.query.KNNQueryBuilderProtoConverter (handles: KNN)
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Injected registry into converter: org.opensearch.knn.grpc.proto.request.search.query.KNNQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for KNN: org.opensearch.knn.grpc.proto.request.search.query.KNNQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Processing external converter: org.opensearch.neuralsearch.grpc.proto.request.search.query.HybridQueryBuilderProtoConverter (handles: HYBRID)
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Injected registry into converter: org.opensearch.neuralsearch.grpc.proto.request.search.query.HybridQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Registered query converter for HYBRID: org.opensearch.neuralsearch.grpc.proto.request.search.query.HybridQueryBuilderProtoConverter
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Successfully injected registry and registered all 2 external converters
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.p.r.s.q.QueryBuilderProtoConverterSpiRegistry] [local-node] Set registry on 26 converters
+[2026-04-22T17:01:07,414][INFO ][o.o.t.g.GrpcPlugin       ] [local-node] Updated registry on all converters to include external converters
+[2026-04-22T17:01:08,164][WARN ][stderr                   ] [local-node] SLF4J(W): No SLF4J providers were found.
+[2026-04-22T17:01:08,164][WARN ][stderr                   ] [local-node] SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+[2026-04-22T17:01:08,164][WARN ][stderr                   ] [local-node] SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[2026-04-22T17:01:08,225][INFO ][o.o.l.b.LTRCircuitBreakerService] [local-node] Registered memory breaker.
+[2026-04-22T17:01:08,241][INFO ][o.o.t.b.CircuitBreakerService] [local-node] Registered memory breaker.
+[2026-04-22T17:01:08,634][INFO ][o.o.r.m.c.i.SdkClientFactory] [local-node] Using local opensearch cluster as metadata store.
+[2026-04-22T17:01:09,034][INFO ][o.o.s.e.ExperimentTaskManager] [local-node] ExperimentTaskManager initialized with batch size 4 (processors: 8)
+[2026-04-22T17:01:09,079][INFO ][o.o.r.m.c.i.SdkClientFactory] [local-node] Using local opensearch cluster as metadata store.
+[2026-04-22T17:01:09,304][WARN ][o.o.s.p.SQLPlugin        ] [local-node] Master key is a required config for using create and update datasource APIs. Please set plugins.query.datasources.encryption.masterkey config in opensearch.yml in all the cluster nodes. More details can be found here: https://github.com/opensearch-project/sql/blob/main/docs/user/ppl/admin/datasources.rst#master-key-config-for-encrypting-credential-information
+[2026-04-22T17:01:09,777][INFO ][o.o.p.i.c.s.LocalIndexLifecycleManager] [local-node] Setting Query Insights delete after to [7]
+[2026-04-22T17:01:10,112][INFO ][o.o.r.m.c.i.SdkClientFactory] [local-node] Using local opensearch cluster as metadata store.
+[2026-04-22T17:01:10,153][INFO ][o.o.m.b.MLCircuitBreakerService] [local-node] Registered ML memory breaker.
+[2026-04-22T17:01:10,160][INFO ][o.o.m.b.MLCircuitBreakerService] [local-node] Registered ML disk breaker.
+[2026-04-22T17:01:10,160][INFO ][o.o.m.b.MLCircuitBreakerService] [local-node] Registered ML native memory breaker.
+[2026-04-22T17:01:10,394][INFO ][o.r.Reflections          ] [local-node] Reflections took 116 ms to scan 1 urls, producing 39 keys and 101 values
+[2026-04-22T17:01:10,428][INFO ][o.r.Reflections          ] [local-node] Reflections took 0 ms to scan 1 urls, producing 3 keys and 5 values
+[2026-04-22T17:01:10,452][INFO ][o.r.Reflections          ] [local-node] Reflections took 4 ms to scan 1 urls, producing 5 keys and 23 values
+[2026-04-22T17:01:11,995][INFO ][o.o.t.NettyAllocator     ] [local-node] creating NettyAllocator with the following configs: [name=unpooled, suggested_max_allocation_size=256kb, factors={opensearch.unsafe.use_unpooled_allocator=null, g1gc_enabled=true, g1gc_region_size=1mb, heap_size=512mb}]
+[2026-04-22T17:01:12,108][ERROR][o.o.b.OpenSearchUncaughtExceptionHandler] [local-node] uncaught exception in thread [main]
+org.opensearch.bootstrap.StartupException: java.lang.IllegalArgumentException: Unknown discovery type [single_node]
+        at org.opensearch.bootstrap.OpenSearch.init(OpenSearch.java:172)
+        at org.opensearch.bootstrap.OpenSearch.execute(OpenSearch.java:159)
+        at org.opensearch.common.cli.EnvironmentAwareCommand.execute(EnvironmentAwareCommand.java:110)
+        at org.opensearch.cli.Command.mainWithoutErrorHandling(Command.java:138)
+        at org.opensearch.cli.Command.main(Command.java:101)
+        at org.opensearch.bootstrap.OpenSearch.main(OpenSearch.java:125)
+        at org.opensearch.bootstrap.OpenSearch.main(OpenSearch.java:91)
+Caused by: java.lang.IllegalArgumentException: Unknown discovery type [single_node]
+        at org.opensearch.discovery.DiscoveryModule.<init>(DiscoveryModule.java:223)
+        at org.opensearch.node.Node.<init>(Node.java:1447)
+        at org.opensearch.node.Node.<init>(Node.java:483)
+        at org.opensearch.bootstrap.Bootstrap$5.<init>(Bootstrap.java:250)
+        at org.opensearch.bootstrap.Bootstrap.setup(Bootstrap.java:250)
+        at org.opensearch.bootstrap.Bootstrap.init(Bootstrap.java:412)
+        at org.opensearch.bootstrap.OpenSearch.init(OpenSearch.java:168)
+        ... 6 more
+uncaught exception in thread [main]
+java.lang.IllegalArgumentException: Unknown discovery type [single_node]
+        at org.opensearch.discovery.DiscoveryModule.<init>(DiscoveryModule.java:223)
+        at org.opensearch.node.Node.<init>(Node.java:1447)
+        at org.opensearch.node.Node.<init>(Node.java:483)
+        at org.opensearch.bootstrap.Bootstrap$5.<init>(Bootstrap.java:250)
+        at org.opensearch.bootstrap.Bootstrap.setup(Bootstrap.java:250)
+        at org.opensearch.bootstrap.Bootstrap.init(Bootstrap.java:412)
+        at org.opensearch.bootstrap.OpenSearch.init(OpenSearch.java:168)
+        at org.opensearch.bootstrap.OpenSearch.execute(OpenSearch.java:159)
+        at org.opensearch.common.cli.EnvironmentAwareCommand.execute(EnvironmentAwareCommand.java:110)
+        at org.opensearch.cli.Command.mainWithoutErrorHandling(Command.java:138)
+        at org.opensearch.cli.Command.main(Command.java:101)
+        at org.opensearch.bootstrap.OpenSearch.main(OpenSearch.java:125)
+        at org.opensearch.bootstrap.OpenSearch.main(OpenSearch.java:91)
+For complete error details, refer to the log at C:\Users\50017162\opensearch\opensearch-3.6.0\logs\local-cluster.log
+(base) PS C:\Users\50017162\opensearch\opensearch-3.6.0>

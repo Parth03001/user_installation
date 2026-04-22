@@ -1,0 +1,10 @@
+
+(base) PS C:\Users\50017162> Start-Nginx
+nginx may have failed to start. Check logs:
+  C:\Users\50017162\nginx\nginx-1.30.0\logs\error.log
+(base) PS C:\Users\50017162\nginx\nginx-1.30.0>
+
+below are the loof for this loc C:\Users\50017162\nginx\nginx-1.30.0\logs\error.log
+
+2026/04/22 16:58:40 [emerg] 22040#1068
+0: unknown directive "﻿worker_processes" in C:\Users\50017162\nginx\nginx-1.30.0/conf/nginx.conf:1
