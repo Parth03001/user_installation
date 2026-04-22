@@ -146,6 +146,105 @@ function Reset-OpenSearchData {
     }
 }
 
+function Fix-OpenSearchConfig {
+    Write-Host ""
+    Write-Host "=== Fix-OpenSearchConfig ===" -ForegroundColor Cyan
+    $osHome   = $env:OPENSEARCH_HOME
+    $confDir  = "$osHome\config"
+    $certDir  = $confDir.Replace("\", "/")
+
+    # 1. Find any PEM files anywhere under opensearch dir
+    Write-Host "Searching for PEM certificate files ..." -ForegroundColor Yellow
+    $allPems = Get-ChildItem $osHome -Recurse -Filter "*.pem" -ErrorAction SilentlyContinue
+    if ($allPems) {
+        $allPems | ForEach-Object { Write-Host "  Found: $($_.FullName)" -ForegroundColor Green }
+    }
+    else {
+        Write-Host "  No .pem files found yet - will run demo cert generator." -ForegroundColor Red
+    }
+
+    # 2. Run the demo cert generator if root-ca.pem is still missing in config/
+    $rootCa = "$confDir\root-ca.pem"
+    if (-not (Test-Path $rootCa)) {
+        $demoScript = "$osHome\plugins\opensearch-security\tools\install_demo_configuration.bat"
+        if (Test-Path $demoScript) {
+            Write-Host "Running install_demo_configuration.bat -y ..." -ForegroundColor Yellow
+            $env:OPENSEARCH_HOME = $osHome
+            Push-Location $osHome
+            $out = & cmd.exe /c "`"$demoScript`" -y 2>&1"
+            Pop-Location
+            $out | Select-Object -First 20 | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
+        }
+        else {
+            Write-Host "  ERROR: demo script not found: $demoScript" -ForegroundColor Red
+        }
+    }
+
+    # 3. Re-check and report
+    Write-Host ""
+    Write-Host "Certificate status in $confDir :" -ForegroundColor Cyan
+    foreach ($f in @("root-ca.pem","esnode.pem","esnode-key.pem","kirk.pem","kirk-key.pem")) {
+        $fp = "$confDir\$f"
+        if (Test-Path $fp) {
+            Write-Host "  [OK]      $f" -ForegroundColor Green
+        }
+        else {
+            Write-Host "  [MISSING] $f" -ForegroundColor Red
+        }
+    }
+
+    # 4. Rewrite opensearch.yml with absolute paths so OpenSearch can always find the certs
+    if (Test-Path "$confDir\root-ca.pem") {
+        $osDataYml = "$osHome\data".Replace("\", "/")
+        $osLogsYml = "$osHome\logs".Replace("\", "/")
+
+        $osConfig = @"
+# OpenSearch $osVersion - single-node  admin / Dataeaze@12345
+cluster.name: local-cluster
+node.name: local-node
+
+path.data: $osDataYml
+path.logs: $osLogsYml
+
+network.host: 127.0.0.1
+http.port: 9200
+
+cluster.initial_cluster_manager_nodes: local-node
+discovery.seed_hosts: []
+
+plugins.security.ssl.http.enabled: false
+plugins.security.ssl.transport.pemcert_filepath: $certDir/esnode.pem
+plugins.security.ssl.transport.pemkey_filepath: $certDir/esnode-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: $certDir/root-ca.pem
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.allow_unsafe_democertificates: true
+plugins.security.allow_default_init_securityindex: true
+plugins.security.authcz.admin_dn:
+  - "CN=kirk,OU=client,O=client,L=test,C=de"
+plugins.security.nodes_dn:
+  - "CN=localhost,OU=node,O=node,L=test,C=de"
+plugins.security.audit.type: internal_opensearch
+plugins.security.enable_snapshot_restore_privilege: true
+plugins.security.check_snapshot_restore_write_privileges: true
+plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
+"@
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText("$confDir\opensearch.yml", $osConfig, $utf8NoBom)
+        Write-Host ""
+        Write-Host "  opensearch.yml rewritten with absolute cert paths." -ForegroundColor Green
+        Write-Host "  Now run: Reset-OpenSearchData  (clears old data)" -ForegroundColor Yellow
+        Write-Host "  Then  : Start-OpenSearch" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host ""
+        Write-Host "  Certificates still missing. Cannot fix opensearch.yml." -ForegroundColor Red
+        Write-Host "  Manual steps:" -ForegroundColor Yellow
+        Write-Host "    1. cd $osHome" -ForegroundColor White
+        Write-Host "    2. .\plugins\opensearch-security\tools\install_demo_configuration.bat" -ForegroundColor White
+        Write-Host "    3. Run Fix-OpenSearchConfig again" -ForegroundColor White
+    }
+}
+
 function Stop-OpenSearch {
     Write-Host "Stopping OpenSearch ..." -ForegroundColor Yellow
     $osProcess = Get-Process -Name "java" -ErrorAction SilentlyContinue |
@@ -246,6 +345,7 @@ Write-Host "  Start-Postgres     /  Stop-Postgres     (port 5432)" -ForegroundCo
 Write-Host "  Start-Neo4j        /  Stop-Neo4j        (port 7474 / 7687)" -ForegroundColor Yellow
 Write-Host "  Start-OpenSearch   /  Stop-OpenSearch   (port 9200  admin/Dataeaze@12345)" -ForegroundColor Yellow
 Write-Host "  Reset-OpenSearchData  <- wipe data for fresh security init" -ForegroundColor Yellow
+Write-Host "  Fix-OpenSearchConfig  <- fix cert paths if OpenSearch won't start" -ForegroundColor Yellow
 Write-Host "  Start-Nginx        /  Stop-Nginx        (port 8080)" -ForegroundColor Yellow
 Write-Host "  Reload-Nginx       /  Get-OpenSearchStatus" -ForegroundColor Yellow
 Write-Host "  Start-All          /  Stop-All" -ForegroundColor Yellow

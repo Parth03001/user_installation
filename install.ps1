@@ -274,28 +274,45 @@ else {
 Write-Host ""
 Write-Host "[5/9] Configuring OpenSearch ..." -ForegroundColor Cyan
 if (Test-Path $osHome) {
-    $osDataDir = "$osHome\data"
-    $osLogsDir = "$osHome\logs"
+    $osDataDir  = "$osHome\data"
+    $osLogsDir  = "$osHome\logs"
+    $osConfDir  = "$osHome\config"
     New-Item $osDataDir -ItemType Directory -Force | Out-Null
     New-Item $osLogsDir -ItemType Directory -Force | Out-Null
-    $osDataYml = $osDataDir.Replace("\", "/")
-    $osLogsYml = $osLogsDir.Replace("\", "/")
+    $osDataYml  = $osDataDir.Replace("\", "/")
+    $osLogsYml  = $osLogsDir.Replace("\", "/")
+
+    # Absolute paths for cert files (forward-slash for Java/YAML compatibility)
+    $osCertDir  = $osConfDir.Replace("\", "/")
+    $pemCert    = "$osCertDir/esnode.pem"
+    $pemKey     = "$osCertDir/esnode-key.pem"
+    $pemCA      = "$osCertDir/root-ca.pem"
+    $pemAdmCert = "$osCertDir/kirk.pem"
+    $pemAdmKey  = "$osCertDir/kirk-key.pem"
 
     # STEP 5a: Run OpenSearch demo install script to generate TLS cert files
     # (root-ca.pem, esnode.pem, esnode-key.pem, kirk.pem, kirk-key.pem)
     $demoScript = "$osHome\plugins\opensearch-security\tools\install_demo_configuration.bat"
-    $rootCaPem  = "$osHome\config\root-ca.pem"
+    $rootCaPem  = "$osConfDir\root-ca.pem"
     if (-not (Test-Path $rootCaPem)) {
         if (Test-Path $demoScript) {
-            Write-Host "  Generating demo TLS certificates via install_demo_configuration.bat ..." -ForegroundColor Yellow
+            Write-Host "  Generating demo TLS certificates ..." -ForegroundColor Yellow
+            # Set OPENSEARCH_HOME so the batch script can locate the installation
+            $env:OPENSEARCH_HOME = $osHome
             Push-Location $osHome
-            & cmd.exe /c "`"$demoScript`" -y" 2>&1 | Out-Null
+            $demoOut = & cmd.exe /c "`"$demoScript`" -y 2>&1"
             Pop-Location
+            # Show first few lines so failures are visible
+            $demoOut | Select-Object -First 10 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
             if (Test-Path $rootCaPem) {
-                Write-Host "  TLS certificates generated." -ForegroundColor Green
+                Write-Host "  TLS certificates generated OK." -ForegroundColor Green
             }
             else {
-                Write-Host "  WARNING: cert generation may have failed. Check $osHome\config\" -ForegroundColor Red
+                Write-Host "  WARNING: root-ca.pem still missing after demo script." -ForegroundColor Red
+                Write-Host "  Checking config directory contents:" -ForegroundColor Yellow
+                Get-ChildItem $osConfDir -ErrorAction SilentlyContinue | ForEach-Object {
+                    Write-Host "    $($_.Name)" -ForegroundColor DarkGray
+                }
             }
         }
         else {
@@ -307,7 +324,19 @@ if (Test-Path $osHome) {
         Write-Host "  [skip] TLS certificates already exist." -ForegroundColor DarkGray
     }
 
-    # STEP 5b: Write our opensearch.yml (overrides whatever the demo script wrote)
+    # List cert files for confirmation
+    Write-Host "  Cert files in config/:" -ForegroundColor DarkGray
+    foreach ($f in @("root-ca.pem","esnode.pem","esnode-key.pem","kirk.pem","kirk-key.pem")) {
+        $fp = "$osConfDir\$f"
+        if (Test-Path $fp) {
+            Write-Host "    [OK] $f" -ForegroundColor Green
+        }
+        else {
+            Write-Host "    [MISSING] $f" -ForegroundColor Red
+        }
+    }
+
+    # STEP 5b: Write opensearch.yml with ABSOLUTE paths to cert files
     $osConfig = @"
 # OpenSearch 3.6.0 - single-node  admin / Dataeaze@12345
 cluster.name: local-cluster
@@ -322,11 +351,11 @@ http.port: 9200
 cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
-# Security: transport uses demo certs, HTTP on plain port 9200 (no SSL)
+# Security: transport TLS uses demo certs (absolute paths), HTTP on plain 9200
 plugins.security.ssl.http.enabled: false
-plugins.security.ssl.transport.pemcert_filepath: esnode.pem
-plugins.security.ssl.transport.pemkey_filepath: esnode-key.pem
-plugins.security.ssl.transport.pemtrustedcas_filepath: root-ca.pem
+plugins.security.ssl.transport.pemcert_filepath: $pemCert
+plugins.security.ssl.transport.pemkey_filepath: $pemKey
+plugins.security.ssl.transport.pemtrustedcas_filepath: $pemCA
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.allow_unsafe_democertificates: true
 plugins.security.allow_default_init_securityindex: true
@@ -339,9 +368,9 @@ plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 "@
-    Write-ConfigFile -Path "$osHome\config\opensearch.yml" -Content $osConfig -Label "opensearch.yml"
+    Write-ConfigFile -Path "$osConfDir\opensearch.yml" -Content $osConfig -Label "opensearch.yml"
     Write-Host "  OpenSearch port : 9200  user=admin  pass=Dataeaze@12345" -ForegroundColor Cyan
-    Write-Host "  NOTE: Run Reset-OpenSearchData before first start with security." -ForegroundColor Yellow
+    Write-Host "  NOTE: If first run, data dir will be initialised automatically." -ForegroundColor Yellow
 }
 else {
     Write-Host "  [skip] OpenSearch folder not found yet." -ForegroundColor Yellow
