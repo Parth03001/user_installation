@@ -283,7 +283,7 @@ if (Test-Path $osHome) {
     $javaHomeYml = $javaHome.Replace("\", "/")
 
     $osConfig = @"
-# OpenSearch 3.6.0 - single-node dev config
+# OpenSearch 3.6.0 - single-node with password (admin / Dataeaze@12345)
 cluster.name: local-cluster
 node.name: local-node
 
@@ -293,15 +293,32 @@ path.logs: $osLogsYml
 network.host: 127.0.0.1
 http.port: 9200
 
-# Single-node cluster (OpenSearch uses this, NOT discovery.type: single_node)
+# Single-node cluster
 cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
-# Disable security plugin for local development
-plugins.security.disabled: true
+# Security: enabled with demo certs, HTTP without SSL
+# Connect with: http://localhost:9200  user=admin  pass=Dataeaze@12345
+plugins.security.ssl.http.enabled: false
+plugins.security.ssl.transport.pemcert_filepath: esnode.pem
+plugins.security.ssl.transport.pemkey_filepath: esnode-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: root-ca.pem
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.allow_unsafe_democertificates: true
+plugins.security.allow_default_init_securityindex: true
+plugins.security.authcz.admin_dn:
+  - "CN=kirk,OU=client,O=client,L=test,C=de"
+plugins.security.nodes_dn:
+  - "CN=localhost,OU=node,O=node,L=test,C=de"
+plugins.security.audit.type: internal_opensearch
+plugins.security.enable_snapshot_restore_privilege: true
+plugins.security.check_snapshot_restore_write_privileges: true
+plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 "@
     Write-ConfigFile -Path "$osHome\config\opensearch.yml" -Content $osConfig -Label "opensearch.yml"
-    Write-Host "  OpenSearch port : 9200 (HTTP, security disabled for dev)" -ForegroundColor DarkGray
+    Write-Host "  OpenSearch port : 9200  user=admin  pass=Dataeaze@12345" -ForegroundColor DarkGray
+    Write-Host "  NOTE: Delete data dir if restarting after security change:" -ForegroundColor Yellow
+    Write-Host "    Remove-Item -Recurse -Force $osDataDir" -ForegroundColor Yellow
 }
 else {
     Write-Host "  [skip] OpenSearch folder not found yet." -ForegroundColor Yellow

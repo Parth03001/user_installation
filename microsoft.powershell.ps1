@@ -120,16 +120,30 @@ function Stop-Neo4j {
 # =============================================================
 function Start-OpenSearch {
     Write-Host "Starting OpenSearch on port 9200 ..." -ForegroundColor Green
+    Write-Host "  Credentials: admin / Dataeaze@12345" -ForegroundColor DarkGray
     $opensearchBat = "$env:OPENSEARCH_HOME\bin\opensearch.bat"
     if (-not (Test-Path $opensearchBat)) {
         Write-Host "ERROR: opensearch.bat not found at $opensearchBat" -ForegroundColor Red
-        Write-Host "Make sure OpenSearch is extracted to C:\Users\50017162\opensearch\opensearch-$osVersion" -ForegroundColor Yellow
         return
     }
     Set-Location $env:OPENSEARCH_HOME
-    # Set OPENSEARCH_JAVA_OPTS for lower memory in dev
     $env:OPENSEARCH_JAVA_OPTS = "-Xms512m -Xmx512m"
+    # Password set on first boot via OPENSEARCH_INITIAL_ADMIN_PASSWORD (OpenSearch 2.12+)
+    $env:OPENSEARCH_INITIAL_ADMIN_PASSWORD = "Dataeaze@12345"
     & $opensearchBat
+}
+
+function Reset-OpenSearchData {
+    Write-Host "Deleting OpenSearch data directory for fresh security init ..." -ForegroundColor Yellow
+    $dataDir = "$env:OPENSEARCH_HOME\data"
+    if (Test-Path $dataDir) {
+        Remove-Item -Recurse -Force $dataDir
+        Write-Host "  Deleted: $dataDir" -ForegroundColor Green
+        Write-Host "  Start OpenSearch again - it will reinitialise with password Dataeaze@12345" -ForegroundColor Cyan
+    }
+    else {
+        Write-Host "  Data directory not found (already clean)." -ForegroundColor DarkGray
+    }
 }
 
 function Stop-OpenSearch {
@@ -147,7 +161,9 @@ function Stop-OpenSearch {
 
 function Get-OpenSearchStatus {
     try {
-        $r = Invoke-RestMethod -Uri "http://localhost:9200" -Method Get -TimeoutSec 3
+        $cred = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("admin:Dataeaze@12345"))
+        $headers = @{ Authorization = "Basic $cred" }
+        $r = Invoke-RestMethod -Uri "http://localhost:9200" -Method Get -Headers $headers -TimeoutSec 3
         Write-Host "OpenSearch is UP - cluster: $($r.cluster_name) version: $($r.version.number)" -ForegroundColor Green
     }
     catch {
@@ -228,7 +244,8 @@ Write-Host ""
 Write-Host "COMMANDS READY:" -ForegroundColor Cyan
 Write-Host "  Start-Postgres     /  Stop-Postgres     (port 5432)" -ForegroundColor Yellow
 Write-Host "  Start-Neo4j        /  Stop-Neo4j        (port 7474 / 7687)" -ForegroundColor Yellow
-Write-Host "  Start-OpenSearch   /  Stop-OpenSearch   (port 9200)" -ForegroundColor Yellow
+Write-Host "  Start-OpenSearch   /  Stop-OpenSearch   (port 9200  admin/Dataeaze@12345)" -ForegroundColor Yellow
+Write-Host "  Reset-OpenSearchData  <- wipe data for fresh security init" -ForegroundColor Yellow
 Write-Host "  Start-Nginx        /  Stop-Nginx        (port 8080)" -ForegroundColor Yellow
 Write-Host "  Reload-Nginx       /  Get-OpenSearchStatus" -ForegroundColor Yellow
 Write-Host "  Start-All          /  Stop-All" -ForegroundColor Yellow
