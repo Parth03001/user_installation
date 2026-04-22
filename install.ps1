@@ -1,7 +1,7 @@
 # =============================================================
 # USER INSTALLATION SCRIPT  (No Admin Required)
 # User : 50017162
-# Tools: PostgreSQL 17.4 | Neo4j 2025.11.0 | Node.js 24.13.0
+# Tools: PostgreSQL 18.3 | Neo4j 2025.11.0 | Node.js 24.13.0
 #
 # =============================================================
 # MANUAL DOWNLOAD LINKS
@@ -15,10 +15,10 @@
 #     https://dist.neo4j.org/neo4j-community-2025.11.0-windows.zip
 #     Save as: neo4j-community-2025.11.0-windows.zip
 #
-#  3. PostgreSQL 17 binaries zip (~330 MB):
+#  3. PostgreSQL 18 binaries zip (~330 MB):
 #     Visit: https://www.enterprisedb.com/download-postgresql-binaries
-#     Click the Windows x86-64 download button for PostgreSQL 17
-#     Save as: postgresql-17.4-1-windows-x64-binaries.zip
+#     Click the Windows x86-64 download button for PostgreSQL 18
+#     Save as: postgresql-18.3-3-windows-x64-binaries.zip
 #     (rename the file to match this exact name)
 #
 #  Put all 3 zip files in:
@@ -33,14 +33,14 @@ if ((Get-ExecutionPolicy -Scope CurrentUser) -eq "Restricted") {
 
 Write-Host ""
 Write-Host " AI/ML Stack Installer - user 50017162 (no admin)" -ForegroundColor Green
-Write-Host " PostgreSQL 17.4 | Neo4j 2025.11.0 | Node.js v24.13.0" -ForegroundColor Cyan
+Write-Host " PostgreSQL 18.3 | Neo4j 2025.11.0 | Node.js v24.13.0" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor DarkGray
 Write-Host ""
 
 # -------------------------------------------------------------
 # VERSION CONFIG
 # -------------------------------------------------------------
-$pgBuild      = "17.4-1"
+$pgBuild      = "18.3-3"
 $neo4jVersion = "2025.11.0"
 $nodeVersion  = "24.13.0"
 
@@ -224,7 +224,7 @@ Write-Host ""
 Write-Host "=====================================================" -ForegroundColor Green
 Write-Host "  DONE" -ForegroundColor Green
 Write-Host "=====================================================" -ForegroundColor Green
-Write-Host "  PostgreSQL  $pgBuild  -> $pgBinDir" -ForegroundColor White
+Write-Host "  PostgreSQL  v$pgBuild  -> $pgBinDir" -ForegroundColor White
 Write-Host "  Neo4j       $neo4jVersion -> $neo4jHome\bin" -ForegroundColor White
 Write-Host "  Node.js     v$nodeVersion  -> $nodeBinDir" -ForegroundColor White
 Write-Host ""
