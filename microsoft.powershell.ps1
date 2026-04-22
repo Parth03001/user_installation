@@ -14,12 +14,16 @@ $neo4jVersion = "2026.03.1"
 $nodeVersion  = "24.13.0"
 $osVersion    = "3.6.0"
 $nginxVersion = "1.30.0"
+$javaVersion  = "21.0.10"
+$javaBuild    = "7"
 
 # ENV VARS
+$env:JAVA_HOME       = "C:\Users\50017162\java21\jdk-$javaVersion+$javaBuild"
 $env:NEO4J_HOME      = "C:\Users\50017162\neo4j-community-$neo4jVersion-windows\neo4j-community-$neo4jVersion"
 $env:OPENSEARCH_HOME = "C:\Users\50017162\opensearch\opensearch-$osVersion"
 
 # SESSION PATH (adds to current shell only)
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
 $env:Path = "C:\Users\50017162\PostgreSQL\pgsql\pgsql\bin;$env:Path"
 $env:Path = "$env:NEO4J_HOME\bin;$env:Path"
 $env:Path = "$env:OPENSEARCH_HOME\bin;$env:Path"
