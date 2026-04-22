@@ -258,7 +258,7 @@ else {
     if (Test-Path $initdb) {
         New-Item $pgDataDir -ItemType Directory -Force | Out-Null
         New-Item $pgLogsDir -ItemType Directory -Force | Out-Null
-        & $initdb -D $pgDataDir -U postgres -E UTF8 --locale=en_US.UTF-8
+        & $initdb -D $pgDataDir -U postgres -E UTF8 --locale=en_US.UTF-8 --auth=trust
         Write-Host "  PostgreSQL data dir ready: $pgDataDir" -ForegroundColor Green
     }
     else {

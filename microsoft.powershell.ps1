@@ -55,6 +55,34 @@ function Stop-Postgres {
     Write-Host "Postgres STOPPED" -ForegroundColor Green
 }
 
+function Set-PostgresPassword {
+    param(
+        [string]$NewPassword = ""
+    )
+    Write-Host ""
+    Write-Host "=== Change PostgreSQL password for user 'postgres' ===" -ForegroundColor Cyan
+    if ($NewPassword -eq "") {
+        $secure = Read-Host "Enter new password for postgres" -AsSecureString
+        $NewPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+        )
+    }
+    $sql = "ALTER USER postgres WITH PASSWORD '$NewPassword';"
+    & "C:\Users\50017162\PostgreSQL\pgsql\pgsql\bin\psql.exe" -U postgres -h localhost -c $sql
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Password changed successfully." -ForegroundColor Green
+        Write-Host "From now on connect with: psql -U postgres -h localhost -W" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "Failed. Make sure Postgres is running: Start-Postgres" -ForegroundColor Red
+    }
+}
+
+function Connect-Postgres {
+    Write-Host "Connecting to PostgreSQL as postgres ..." -ForegroundColor Cyan
+    & "C:\Users\50017162\PostgreSQL\pgsql\pgsql\bin\psql.exe" -U postgres -h localhost
+}
+
 # =============================================================
 # NEO4J
 # =============================================================
@@ -204,7 +232,7 @@ Write-Host "  Start-OpenSearch   /  Stop-OpenSearch   (port 9200)" -ForegroundCo
 Write-Host "  Start-Nginx        /  Stop-Nginx        (port 8080)" -ForegroundColor Yellow
 Write-Host "  Reload-Nginx       /  Get-OpenSearchStatus" -ForegroundColor Yellow
 Write-Host "  Start-All          /  Stop-All" -ForegroundColor Yellow
-Write-Host "  psql -U postgres" -ForegroundColor Yellow
+Write-Host "  Connect-Postgres   /  Set-PostgresPassword" -ForegroundColor Yellow
 Write-Host ""
 
 # Quick status check (java -version writes to stderr, convert to string first)
