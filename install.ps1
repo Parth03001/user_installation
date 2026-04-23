@@ -366,10 +366,14 @@ cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
 # Security: HTTP plain (no SSL), transport encrypted via JKS keystores
+# Paths are relative to the config directory (OpenSearch resolves them that way)
 plugins.security.ssl.http.enabled: false
-plugins.security.ssl.transport.keystore_filepath: $ksFwd
+plugins.security.ssl.transport.keystore_type: JKS
+plugins.security.ssl.transport.keystore_filepath: transport.jks
 plugins.security.ssl.transport.keystore_password: $ksPass
-plugins.security.ssl.transport.truststore_filepath: $tsFwd
+plugins.security.ssl.transport.keystore_keypassword: $ksPass
+plugins.security.ssl.transport.truststore_type: JKS
+plugins.security.ssl.transport.truststore_filepath: truststore.jks
 plugins.security.ssl.transport.truststore_password: $ksPass
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.allow_unsafe_democertificates: true
