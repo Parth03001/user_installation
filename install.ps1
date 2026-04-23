@@ -282,12 +282,22 @@ if (Test-Path $osHome) {
     $osDataYml  = $osDataDir.Replace("\", "/")
     $osLogsYml  = $osLogsDir.Replace("\", "/")
 
-    # STEP 5a: Generate TLS keystore using Java keytool
+    # STEP 5a: Generate TLS keystore + truststore using Java keytool
     # install_demo_configuration.bat needs bash/OpenSSL which plain Windows lacks.
-    # keytool ships with Java 21 and creates a JKS keystore - no extra tools needed.
+    # keytool ships with Java 21 - no extra tools needed.
+    #
+    # Why two files?
+    #   transport.jks  = keystore  (PrivateKeyEntry: node's private key + cert)
+    #   truststore.jks = truststore (TrustedCertEntry: CA cert to trust)
+    # OpenSearch's TrustStoreConfiguration only counts TrustedCertEntry records,
+    # so using the same JKS for both fails. We export the self-signed cert from
+    # the keystore and re-import it as a trusted entry in a separate truststore.
     $ksPath  = "$osConfDir\transport.jks"
+    $tsPath  = "$osConfDir\truststore.jks"
+    $crtPath = "$osConfDir\transport.crt"
     $ksPass  = "changeit"
     $ksFwd   = $ksPath.Replace("\", "/")
+    $tsFwd   = $tsPath.Replace("\", "/")
     $nodeDN  = "CN=localhost,OU=node,O=node,L=test,C=de"
 
     # Locate keytool (javaHome defined above; may not be extracted yet if Java step skipped)
@@ -296,33 +306,51 @@ if (Test-Path $osHome) {
         if (Test-Path $kt -ErrorAction SilentlyContinue) { $keytoolExe = $kt; break }
     }
 
-    if (-not (Test-Path $ksPath)) {
-        if ($keytoolExe) {
-            Write-Host "  Generating TLS keystore with keytool ..." -ForegroundColor Yellow
-            $ktArgs = @(
-                "-genkeypair", "-alias", "opensearch",
-                "-keyalg", "RSA", "-keysize", "2048", "-validity", "3650",
-                "-keystore", $ksPath, "-storepass", $ksPass, "-keypass", $ksPass,
-                "-dname", $nodeDN, "-storetype", "JKS", "-noprompt"
-            )
-            & $keytoolExe @ktArgs 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
-            if (Test-Path $ksPath) {
-                Write-Host "  Keystore generated: transport.jks" -ForegroundColor Green
-            }
-            else {
-                Write-Host "  ERROR: keytool failed - see output above." -ForegroundColor Red
-            }
+    if ($keytoolExe) {
+        # Step 1: keystore (private key + self-signed cert)
+        if (-not (Test-Path $ksPath)) {
+            Write-Host "  Generating TLS keystore (transport.jks) ..." -ForegroundColor Yellow
+            & $keytoolExe -genkeypair -alias opensearch `
+                -keyalg RSA -keysize 2048 -validity 3650 `
+                -keystore $ksPath -storepass $ksPass -keypass $ksPass `
+                -dname $nodeDN -storetype JKS -noprompt 2>&1 |
+                ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
         }
         else {
-            Write-Host "  WARNING: keytool.exe not found (Java 21 not yet extracted)." -ForegroundColor Red
-            Write-Host "  Re-run install.ps1 after Java is installed to generate the keystore." -ForegroundColor Yellow
+            Write-Host "  [skip] transport.jks already exists." -ForegroundColor DarkGray
+        }
+
+        # Step 2: export the self-signed cert from the keystore
+        if ((Test-Path $ksPath) -and (-not (Test-Path $crtPath))) {
+            Write-Host "  Exporting certificate to transport.crt ..." -ForegroundColor Yellow
+            & $keytoolExe -exportcert -alias opensearch `
+                -keystore $ksPath -storepass $ksPass `
+                -file $crtPath -rfc 2>&1 |
+                ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+        }
+
+        # Step 3: truststore (TrustedCertEntry - what OpenSearch actually checks)
+        if ((Test-Path $crtPath) -and (-not (Test-Path $tsPath))) {
+            Write-Host "  Creating truststore (truststore.jks) ..." -ForegroundColor Yellow
+            & $keytoolExe -importcert -alias opensearch `
+                -keystore $tsPath -storepass $ksPass `
+                -file $crtPath -noprompt 2>&1 |
+                ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+        }
+
+        if ((Test-Path $ksPath) -and (Test-Path $tsPath)) {
+            Write-Host "  TLS keystores ready." -ForegroundColor Green
+        }
+        else {
+            Write-Host "  ERROR: keystore generation failed - see output above." -ForegroundColor Red
         }
     }
     else {
-        Write-Host "  [skip] TLS keystore already exists." -ForegroundColor DarkGray
+        Write-Host "  WARNING: keytool.exe not found (Java 21 not yet extracted)." -ForegroundColor Red
+        Write-Host "  Re-run install.ps1 after Java is installed to generate the keystores." -ForegroundColor Yellow
     }
 
-    # STEP 5b: Write opensearch.yml using JKS keystore (no PEM files needed)
+    # STEP 5b: Write opensearch.yml - separate keystore + truststore paths
     $osConfig = @"
 # OpenSearch 3.6.0 - single-node  admin / Dataeaze@12345
 cluster.name: local-cluster
@@ -337,11 +365,11 @@ http.port: 9200
 cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
-# Security: HTTP on plain 9200 (no SSL), transport encrypted via JKS keystore
+# Security: HTTP plain (no SSL), transport encrypted via JKS keystores
 plugins.security.ssl.http.enabled: false
 plugins.security.ssl.transport.keystore_filepath: $ksFwd
 plugins.security.ssl.transport.keystore_password: $ksPass
-plugins.security.ssl.transport.truststore_filepath: $ksFwd
+plugins.security.ssl.transport.truststore_filepath: $tsFwd
 plugins.security.ssl.transport.truststore_password: $ksPass
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.allow_unsafe_democertificates: true
