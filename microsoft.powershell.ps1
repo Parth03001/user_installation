@@ -149,57 +149,50 @@ function Reset-OpenSearchData {
 function Fix-OpenSearchConfig {
     Write-Host ""
     Write-Host "=== Fix-OpenSearchConfig ===" -ForegroundColor Cyan
-    $osHome   = $env:OPENSEARCH_HOME
-    $confDir  = "$osHome\config"
-    $certDir  = $confDir.Replace("\", "/")
+    $osHome    = $env:OPENSEARCH_HOME
+    $confDir   = "$osHome\config"
+    $ksPath    = "$confDir\transport.jks"
+    $ksPass    = "changeit"
+    $ksFwd     = $ksPath.Replace("\", "/")
+    $nodeDN    = "CN=localhost,OU=node,O=node,L=test,C=de"
 
-    # 1. Find any PEM files anywhere under opensearch dir
-    Write-Host "Searching for PEM certificate files ..." -ForegroundColor Yellow
-    $allPems = Get-ChildItem $osHome -Recurse -Filter "*.pem" -ErrorAction SilentlyContinue
-    if ($allPems) {
-        $allPems | ForEach-Object { Write-Host "  Found: $($_.FullName)" -ForegroundColor Green }
+    # 1. Generate JKS keystore using keytool if not already present
+    #    (install_demo_configuration.bat needs bash/OpenSSL - not available on plain Windows)
+    if (-not (Test-Path $ksPath)) {
+        $keytoolExe = "$env:JAVA_HOME\bin\keytool.exe"
+        if (-not (Test-Path $keytoolExe)) {
+            Write-Host "  ERROR: keytool.exe not found at $keytoolExe" -ForegroundColor Red
+            Write-Host "  Make sure JAVA_HOME is set and Java 21 is installed." -ForegroundColor Yellow
+            return
+        }
+        Write-Host "  Generating TLS keystore with keytool ..." -ForegroundColor Yellow
+        $ktArgs = @(
+            "-genkeypair", "-alias", "opensearch",
+            "-keyalg", "RSA", "-keysize", "2048", "-validity", "3650",
+            "-keystore", $ksPath, "-storepass", $ksPass, "-keypass", $ksPass,
+            "-dname", $nodeDN, "-storetype", "JKS", "-noprompt"
+        )
+        & $keytoolExe @ktArgs 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+        if (Test-Path $ksPath) {
+            Write-Host "  Keystore generated: $ksPath" -ForegroundColor Green
+        }
+        else {
+            Write-Host "  ERROR: keytool failed to create keystore." -ForegroundColor Red
+            return
+        }
     }
     else {
-        Write-Host "  No .pem files found yet - will run demo cert generator." -ForegroundColor Red
+        Write-Host "  [skip] Keystore already exists: $ksPath" -ForegroundColor DarkGray
     }
 
-    # 2. Run the demo cert generator if root-ca.pem is still missing in config/
-    $rootCa = "$confDir\root-ca.pem"
-    if (-not (Test-Path $rootCa)) {
-        $demoScript = "$osHome\plugins\opensearch-security\tools\install_demo_configuration.bat"
-        if (Test-Path $demoScript) {
-            Write-Host "Running install_demo_configuration.bat -y ..." -ForegroundColor Yellow
-            $env:OPENSEARCH_HOME = $osHome
-            Push-Location $osHome
-            $out = & cmd.exe /c "`"$demoScript`" -y 2>&1"
-            Pop-Location
-            $out | Select-Object -First 20 | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
-        }
-        else {
-            Write-Host "  ERROR: demo script not found: $demoScript" -ForegroundColor Red
-        }
-    }
+    # 2. Rewrite opensearch.yml pointing to the JKS keystore (absolute path)
+    $osDataYml = "$osHome\data".Replace("\", "/")
+    $osLogsYml = "$osHome\logs".Replace("\", "/")
+    New-Item "$osHome\data" -ItemType Directory -Force | Out-Null
+    New-Item "$osHome\logs" -ItemType Directory -Force | Out-Null
 
-    # 3. Re-check and report
-    Write-Host ""
-    Write-Host "Certificate status in $confDir :" -ForegroundColor Cyan
-    foreach ($f in @("root-ca.pem","esnode.pem","esnode-key.pem","kirk.pem","kirk-key.pem")) {
-        $fp = "$confDir\$f"
-        if (Test-Path $fp) {
-            Write-Host "  [OK]      $f" -ForegroundColor Green
-        }
-        else {
-            Write-Host "  [MISSING] $f" -ForegroundColor Red
-        }
-    }
-
-    # 4. Rewrite opensearch.yml with absolute paths so OpenSearch can always find the certs
-    if (Test-Path "$confDir\root-ca.pem") {
-        $osDataYml = "$osHome\data".Replace("\", "/")
-        $osLogsYml = "$osHome\logs".Replace("\", "/")
-
-        $osConfig = @"
-# OpenSearch $osVersion - single-node  admin / Dataeaze@12345
+    $osConfig = @"
+# OpenSearch 3.6.0 - single-node  admin / Dataeaze@12345
 cluster.name: local-cluster
 node.name: local-node
 
@@ -213,36 +206,30 @@ cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
 plugins.security.ssl.http.enabled: false
-plugins.security.ssl.transport.pemcert_filepath: $certDir/esnode.pem
-plugins.security.ssl.transport.pemkey_filepath: $certDir/esnode-key.pem
-plugins.security.ssl.transport.pemtrustedcas_filepath: $certDir/root-ca.pem
+plugins.security.ssl.transport.keystore_filepath: $ksFwd
+plugins.security.ssl.transport.keystore_password: $ksPass
+plugins.security.ssl.transport.truststore_filepath: $ksFwd
+plugins.security.ssl.transport.truststore_password: $ksPass
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.allow_unsafe_democertificates: true
 plugins.security.allow_default_init_securityindex: true
 plugins.security.authcz.admin_dn:
-  - "CN=kirk,OU=client,O=client,L=test,C=de"
+  - "$nodeDN"
 plugins.security.nodes_dn:
-  - "CN=localhost,OU=node,O=node,L=test,C=de"
+  - "$nodeDN"
 plugins.security.audit.type: internal_opensearch
 plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 "@
-        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-        [System.IO.File]::WriteAllText("$confDir\opensearch.yml", $osConfig, $utf8NoBom)
-        Write-Host ""
-        Write-Host "  opensearch.yml rewritten with absolute cert paths." -ForegroundColor Green
-        Write-Host "  Now run: Reset-OpenSearchData  (clears old data)" -ForegroundColor Yellow
-        Write-Host "  Then  : Start-OpenSearch" -ForegroundColor Yellow
-    }
-    else {
-        Write-Host ""
-        Write-Host "  Certificates still missing. Cannot fix opensearch.yml." -ForegroundColor Red
-        Write-Host "  Manual steps:" -ForegroundColor Yellow
-        Write-Host "    1. cd $osHome" -ForegroundColor White
-        Write-Host "    2. .\plugins\opensearch-security\tools\install_demo_configuration.bat" -ForegroundColor White
-        Write-Host "    3. Run Fix-OpenSearchConfig again" -ForegroundColor White
-    }
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText("$confDir\opensearch.yml", $osConfig, $utf8NoBom)
+    Write-Host "  opensearch.yml rewritten with JKS keystore config." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  Next steps:" -ForegroundColor Cyan
+    Write-Host "    Reset-OpenSearchData   <- wipe old data (required)" -ForegroundColor Yellow
+    Write-Host "    Start-OpenSearch       <- then start" -ForegroundColor Yellow
+    Write-Host "  Login: admin / Dataeaze@12345" -ForegroundColor White
 }
 
 function Stop-OpenSearch {

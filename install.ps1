@@ -282,61 +282,47 @@ if (Test-Path $osHome) {
     $osDataYml  = $osDataDir.Replace("\", "/")
     $osLogsYml  = $osLogsDir.Replace("\", "/")
 
-    # Absolute paths for cert files (forward-slash for Java/YAML compatibility)
-    $osCertDir  = $osConfDir.Replace("\", "/")
-    $pemCert    = "$osCertDir/esnode.pem"
-    $pemKey     = "$osCertDir/esnode-key.pem"
-    $pemCA      = "$osCertDir/root-ca.pem"
-    $pemAdmCert = "$osCertDir/kirk.pem"
-    $pemAdmKey  = "$osCertDir/kirk-key.pem"
+    # STEP 5a: Generate TLS keystore using Java keytool
+    # install_demo_configuration.bat needs bash/OpenSSL which plain Windows lacks.
+    # keytool ships with Java 21 and creates a JKS keystore - no extra tools needed.
+    $ksPath  = "$osConfDir\transport.jks"
+    $ksPass  = "changeit"
+    $ksFwd   = $ksPath.Replace("\", "/")
+    $nodeDN  = "CN=localhost,OU=node,O=node,L=test,C=de"
 
-    # STEP 5a: Run OpenSearch demo install script to generate TLS cert files
-    # (root-ca.pem, esnode.pem, esnode-key.pem, kirk.pem, kirk-key.pem)
-    $demoScript = "$osHome\plugins\opensearch-security\tools\install_demo_configuration.bat"
-    $rootCaPem  = "$osConfDir\root-ca.pem"
-    if (-not (Test-Path $rootCaPem)) {
-        if (Test-Path $demoScript) {
-            Write-Host "  Generating demo TLS certificates ..." -ForegroundColor Yellow
-            # Set OPENSEARCH_HOME so the batch script can locate the installation
-            $env:OPENSEARCH_HOME = $osHome
-            Push-Location $osHome
-            $demoOut = & cmd.exe /c "`"$demoScript`" -y 2>&1"
-            Pop-Location
-            # Show first few lines so failures are visible
-            $demoOut | Select-Object -First 10 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
-            if (Test-Path $rootCaPem) {
-                Write-Host "  TLS certificates generated OK." -ForegroundColor Green
+    # Locate keytool (javaHome defined above; may not be extracted yet if Java step skipped)
+    $keytoolExe = $null
+    foreach ($kt in @("$javaHome\bin\keytool.exe", "$env:JAVA_HOME\bin\keytool.exe")) {
+        if (Test-Path $kt -ErrorAction SilentlyContinue) { $keytoolExe = $kt; break }
+    }
+
+    if (-not (Test-Path $ksPath)) {
+        if ($keytoolExe) {
+            Write-Host "  Generating TLS keystore with keytool ..." -ForegroundColor Yellow
+            $ktArgs = @(
+                "-genkeypair", "-alias", "opensearch",
+                "-keyalg", "RSA", "-keysize", "2048", "-validity", "3650",
+                "-keystore", $ksPath, "-storepass", $ksPass, "-keypass", $ksPass,
+                "-dname", $nodeDN, "-storetype", "JKS", "-noprompt"
+            )
+            & $keytoolExe @ktArgs 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+            if (Test-Path $ksPath) {
+                Write-Host "  Keystore generated: transport.jks" -ForegroundColor Green
             }
             else {
-                Write-Host "  WARNING: root-ca.pem still missing after demo script." -ForegroundColor Red
-                Write-Host "  Checking config directory contents:" -ForegroundColor Yellow
-                Get-ChildItem $osConfDir -ErrorAction SilentlyContinue | ForEach-Object {
-                    Write-Host "    $($_.Name)" -ForegroundColor DarkGray
-                }
+                Write-Host "  ERROR: keytool failed - see output above." -ForegroundColor Red
             }
         }
         else {
-            Write-Host "  WARNING: install_demo_configuration.bat not found at:" -ForegroundColor Red
-            Write-Host "    $demoScript" -ForegroundColor Yellow
+            Write-Host "  WARNING: keytool.exe not found (Java 21 not yet extracted)." -ForegroundColor Red
+            Write-Host "  Re-run install.ps1 after Java is installed to generate the keystore." -ForegroundColor Yellow
         }
     }
     else {
-        Write-Host "  [skip] TLS certificates already exist." -ForegroundColor DarkGray
+        Write-Host "  [skip] TLS keystore already exists." -ForegroundColor DarkGray
     }
 
-    # List cert files for confirmation
-    Write-Host "  Cert files in config/:" -ForegroundColor DarkGray
-    foreach ($f in @("root-ca.pem","esnode.pem","esnode-key.pem","kirk.pem","kirk-key.pem")) {
-        $fp = "$osConfDir\$f"
-        if (Test-Path $fp) {
-            Write-Host "    [OK] $f" -ForegroundColor Green
-        }
-        else {
-            Write-Host "    [MISSING] $f" -ForegroundColor Red
-        }
-    }
-
-    # STEP 5b: Write opensearch.yml with ABSOLUTE paths to cert files
+    # STEP 5b: Write opensearch.yml using JKS keystore (no PEM files needed)
     $osConfig = @"
 # OpenSearch 3.6.0 - single-node  admin / Dataeaze@12345
 cluster.name: local-cluster
@@ -351,26 +337,31 @@ http.port: 9200
 cluster.initial_cluster_manager_nodes: local-node
 discovery.seed_hosts: []
 
-# Security: transport TLS uses demo certs (absolute paths), HTTP on plain 9200
+# Security: HTTP on plain 9200 (no SSL), transport encrypted via JKS keystore
 plugins.security.ssl.http.enabled: false
-plugins.security.ssl.transport.pemcert_filepath: $pemCert
-plugins.security.ssl.transport.pemkey_filepath: $pemKey
-plugins.security.ssl.transport.pemtrustedcas_filepath: $pemCA
+plugins.security.ssl.transport.keystore_filepath: $ksFwd
+plugins.security.ssl.transport.keystore_password: $ksPass
+plugins.security.ssl.transport.truststore_filepath: $ksFwd
+plugins.security.ssl.transport.truststore_password: $ksPass
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.allow_unsafe_democertificates: true
 plugins.security.allow_default_init_securityindex: true
 plugins.security.authcz.admin_dn:
-  - "CN=kirk,OU=client,O=client,L=test,C=de"
+  - "$nodeDN"
 plugins.security.nodes_dn:
-  - "CN=localhost,OU=node,O=node,L=test,C=de"
+  - "$nodeDN"
 plugins.security.audit.type: internal_opensearch
 plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 "@
     Write-ConfigFile -Path "$osConfDir\opensearch.yml" -Content $osConfig -Label "opensearch.yml"
-    Write-Host "  OpenSearch port : 9200  user=admin  pass=Dataeaze@12345" -ForegroundColor Cyan
-    Write-Host "  NOTE: If first run, data dir will be initialised automatically." -ForegroundColor Yellow
+    if (Test-Path $ksPath) {
+        Write-Host "  OpenSearch ready. Credentials: admin / Dataeaze@12345" -ForegroundColor Cyan
+    }
+    else {
+        Write-Host "  Keystore missing - re-run install.ps1 after Java is extracted." -ForegroundColor Red
+    }
 }
 else {
     Write-Host "  [skip] OpenSearch folder not found yet." -ForegroundColor Yellow
