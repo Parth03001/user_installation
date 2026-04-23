@@ -139,11 +139,63 @@ function Reset-OpenSearchData {
     if (Test-Path $dataDir) {
         Remove-Item -Recurse -Force $dataDir
         Write-Host "  Deleted: $dataDir" -ForegroundColor Green
-        Write-Host "  Start OpenSearch again - it will reinitialise with password Dataeaze@12345" -ForegroundColor Cyan
+        Write-Host "  Run Start-OpenSearch to reinitialise." -ForegroundColor Cyan
     }
     else {
         Write-Host "  Data directory not found (already clean)." -ForegroundColor DarkGray
     }
+}
+
+function Set-OpenSearchAdminPassword {
+    # OPENSEARCH_INITIAL_ADMIN_PASSWORD env var is only used by the demo install
+    # script - NOT read by the OpenSearch server at runtime. The actual password
+    # comes from the bcrypt hash stored in internal_users.yml. This function uses
+    # the bundled hash.bat tool to generate the correct hash and writes it directly.
+    param([string]$Password = "Dataeaze@12345")
+
+    $osHome  = $env:OPENSEARCH_HOME
+    $hashBat = "$osHome\plugins\opensearch-security\tools\hash.bat"
+    $secDir  = "$osHome\config\opensearch-security"
+    $usersYml = "$secDir\internal_users.yml"
+
+    if (-not (Test-Path $hashBat)) {
+        Write-Host "ERROR: hash.bat not found at $hashBat" -ForegroundColor Red
+        return
+    }
+
+    Write-Host "Generating bcrypt hash for '$Password' ..." -ForegroundColor Yellow
+    $output = & cmd.exe /c "`"$hashBat`" -p `"$Password`"" 2>&1
+    $hash = $output | Where-Object { $_ -match '^\$2[aby]\$' } | Select-Object -Last 1
+
+    if (-not $hash) {
+        Write-Host "  hash.bat output:" -ForegroundColor Red
+        $output | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+        Write-Host "  ERROR: No bcrypt hash in output." -ForegroundColor Red
+        return
+    }
+    Write-Host "  Hash generated OK." -ForegroundColor Green
+
+    New-Item $secDir -ItemType Directory -Force | Out-Null
+    $usersContent = @"
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+admin:
+  hash: "$hash"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "Admin user"
+"@
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($usersYml, $usersContent, $utf8NoBom)
+    Write-Host "  internal_users.yml written with correct hash." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  Now run:" -ForegroundColor Cyan
+    Write-Host "    Reset-OpenSearchData" -ForegroundColor Yellow
+    Write-Host "    Start-OpenSearch" -ForegroundColor Yellow
+    Write-Host "  Login will be: admin / $Password" -ForegroundColor White
 }
 
 function Fix-OpenSearchConfig {
@@ -364,8 +416,9 @@ Write-Host "COMMANDS READY:" -ForegroundColor Cyan
 Write-Host "  Start-Postgres     /  Stop-Postgres     (port 5432)" -ForegroundColor Yellow
 Write-Host "  Start-Neo4j        /  Stop-Neo4j        (port 7474 / 7687)" -ForegroundColor Yellow
 Write-Host "  Start-OpenSearch   /  Stop-OpenSearch   (port 9200  admin/Dataeaze@12345)" -ForegroundColor Yellow
-Write-Host "  Reset-OpenSearchData  <- wipe data for fresh security init" -ForegroundColor Yellow
-Write-Host "  Fix-OpenSearchConfig  <- fix cert paths if OpenSearch won't start" -ForegroundColor Yellow
+Write-Host "  Reset-OpenSearchData     <- wipe data for fresh security init" -ForegroundColor Yellow
+Write-Host "  Fix-OpenSearchConfig     <- fix cert paths if OpenSearch won't start" -ForegroundColor Yellow
+Write-Host "  Set-OpenSearchAdminPassword  <- set admin password hash in internal_users.yml" -ForegroundColor Yellow
 Write-Host "  Start-Nginx        /  Stop-Nginx        (port 8080)" -ForegroundColor Yellow
 Write-Host "  Reload-Nginx       /  Get-OpenSearchStatus" -ForegroundColor Yellow
 Write-Host "  Start-All          /  Stop-All" -ForegroundColor Yellow

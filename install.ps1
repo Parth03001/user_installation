@@ -388,8 +388,48 @@ plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 "@
     Write-ConfigFile -Path "$osConfDir\opensearch.yml" -Content $osConfig -Label "opensearch.yml"
+
+    # STEP 5c: Write internal_users.yml with bcrypt hash of the admin password.
+    # OPENSEARCH_INITIAL_ADMIN_PASSWORD env var is only used by the demo install
+    # script - the server reads the hash directly from internal_users.yml instead.
+    $hashBat  = "$osHome\plugins\opensearch-security\tools\hash.bat"
+    $secDir   = "$osConfDir\opensearch-security"
+    $usersYml = "$secDir\internal_users.yml"
+    $adminPassword = "Dataeaze@12345"
+
+    if (Test-Path $hashBat) {
+        Write-Host "  Generating admin password hash via hash.bat ..." -ForegroundColor Yellow
+        $hashOut = & cmd.exe /c "`"$hashBat`" -p `"$adminPassword`"" 2>&1
+        $adminHash = $hashOut | Where-Object { $_ -match '^\$2[aby]\$' } | Select-Object -Last 1
+        if ($adminHash) {
+            New-Item $secDir -ItemType Directory -Force | Out-Null
+            $usersContent = @"
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+admin:
+  hash: "$adminHash"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "Admin user"
+"@
+            Write-ConfigFile -Path $usersYml -Content $usersContent -Label "internal_users.yml"
+            Write-Host "  Admin password set to: $adminPassword" -ForegroundColor Green
+        }
+        else {
+            Write-Host "  WARNING: hash.bat produced no hash - internal_users.yml not written." -ForegroundColor Red
+            Write-Host "  Run Set-OpenSearchAdminPassword after install completes." -ForegroundColor Yellow
+        }
+    }
+    else {
+        Write-Host "  WARNING: hash.bat not found - internal_users.yml not written." -ForegroundColor Red
+        Write-Host "  Run Set-OpenSearchAdminPassword after install completes." -ForegroundColor Yellow
+    }
+
     if (Test-Path $ksPath) {
-        Write-Host "  OpenSearch ready. Credentials: admin / Dataeaze@12345" -ForegroundColor Cyan
+        Write-Host "  OpenSearch ready. Credentials: admin / $adminPassword" -ForegroundColor Cyan
     }
     else {
         Write-Host "  Keystore missing - re-run install.ps1 after Java is extracted." -ForegroundColor Red
